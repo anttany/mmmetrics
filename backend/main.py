@@ -27,6 +27,7 @@ from backend.store import (
 )
 from backend.alerts import send_test
 
+# Paramiko на INFO пишет служебный обмен. Пароль туда не кладём, но шум в логе ни к чему.
 logging.getLogger("paramiko").setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -34,7 +35,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     connect()
-    start()
+    start()  # опрос живёт вместе с процессом API
     yield
     stop()
 
@@ -63,6 +64,7 @@ def metrics_get(serverId: str = ""):
         return json_body({"error": "Не указан сервер."}, 400)
     if not known(server_id):
         return json_body({"error": "Сервер не найден."}, 404)
+    # Новый сервер: ждём первую точку, чтобы панель не мигала пустым экраном.
     if not has_samples(server_id):
         import time
 

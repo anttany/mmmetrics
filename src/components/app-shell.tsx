@@ -19,6 +19,7 @@ export function AppShell() {
   const [refreshing, setRefreshing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
+  // Цифры считает Python. Здесь только чтение API.
   const loadOverview = useCallback(async () => {
     const response = await fetch("/api/overview", { cache: "no-store" });
     if (!response.ok) throw new Error("Не удалось загрузить список серверов.");

@@ -28,6 +28,8 @@ def send_test() -> dict:
 
 
 def evaluate_rule(server: dict, rule: dict, sample: dict) -> None:
+    # Письмо на фронте срабатывания и когда значение снова ниже порога.
+    # Пока алерт активен, повторно не шлём — только после паузы.
     firing = is_firing(rule, sample)
     state = alert_state(rule["id"], server["id"])
     current = now_ms()

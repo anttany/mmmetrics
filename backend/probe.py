@@ -3,6 +3,7 @@ import socket
 
 import paramiko
 
+# Два среза cpu с паузой в секунду: по одному проценту не посчитать.
 PROBE = "\n".join(
     [
         "echo '## hostname'",
@@ -26,6 +27,7 @@ PROBE = "\n".join(
 )
 
 
+# Пароль иногда попадает в текст ошибки SSH. Наружу его не отдаём.
 def redact(message: str, secrets: list[str | None]) -> str:
     text = message or ""
     for secret in secrets:
@@ -84,7 +86,7 @@ def run_probe(host: str, port: int, username: str, password: str) -> str:
             banner_timeout=12,
             auth_timeout=12,
             look_for_keys=False,
-            allow_agent=False,
+            allow_agent=False,  # только пароль из базы, не ключи с этой машины
         )
         _stdin, stdout, stderr = client.exec_command(PROBE, timeout=20)
         output = stdout.read().decode("utf-8", errors="replace")
@@ -148,6 +150,7 @@ def parse_probe(output: str) -> dict:
             + ". Нужен Linux с /proc и df."
         )
 
+    # Занято = всего минус доступно, не «всего минус свободно».
     mem_used = max(0, memory["total"] - memory["available"])
     return {
         "online": True,
@@ -221,6 +224,7 @@ def parse_load(value: str | None) -> tuple[float, float, float] | None:
     return numbers[0], numbers[1], numbers[2]
 
 
+# Доля занятого времени между двумя срезами /proc/stat.
 def cpu_usage(before: str | None, after: str | None) -> float | None:
     first = cpu_counters(before)
     second = cpu_counters(after)

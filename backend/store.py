@@ -8,8 +8,8 @@ import uuid
 from pathlib import Path
 
 POLL_INTERVAL_MS = 15_000
-HISTORY_WINDOW_MS = 2 * 60 * 60 * 1000
-RETENTION_MS = 6 * 60 * 60 * 1000
+HISTORY_WINDOW_MS = 2 * 60 * 60 * 1000  # на графиках
+RETENTION_MS = 6 * 60 * 60 * 1000  # в базе
 METRICS = ("cpu", "memory", "disk", "load", "offline")
 COOLDOWNS = (300, 600, 1800, 3600)
 
@@ -38,6 +38,7 @@ def connect() -> sqlite3.Connection:
 
 
 def database_file() -> str:
+    # Файл не в каталоге проекта: Next при сборке спотыкается о занятый sqlite.
     root = os.environ.get("LOCALAPPDATA") or os.environ.get("HOME") or str(Path.cwd() / "data")
     directory = Path(root) / "mmmetrics"
     directory.mkdir(parents=True, exist_ok=True)
@@ -582,6 +583,7 @@ def parse_rule(payload: dict) -> dict:
     }
 
 
+# Пароль в ответ не кладём, только признак, что он задан.
 def public_server(row: sqlite3.Row) -> dict:
     has_password = row["has_password"] if "has_password" in row.keys() else bool(row["password"])
     return {

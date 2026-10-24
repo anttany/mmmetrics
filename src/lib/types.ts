@@ -1,3 +1,4 @@
+// Совпадает с интервалом опроса в backend/store.py.
 export const POLL_INTERVAL_MS = 15_000;
 export const HISTORY_WINDOW_MS = 2 * 60 * 60 * 1000;
 export const RETENTION_MS = 6 * 60 * 60 * 1000;

@@ -26,6 +26,7 @@ def stop() -> None:
 
 
 def poll_now(server_id: str | None = None) -> None:
+    # Ручной опрос и фоновый не идут одновременно.
     with _lock:
         collect_and_store(server_id)
 
@@ -38,6 +39,7 @@ def loop() -> None:
             poll_now()
         except Exception as error:
             log.error("опрос не удался: %s", error)
+        # 15 секунд от начала круга, а не после него.
         _stop.wait(max(0, interval - (time.time() - started)))
 
 
@@ -52,7 +54,8 @@ def collect_and_store(server_id: str | None) -> None:
             message = str(error) or "Не удалось опросить сервер."
             log.error("опрос не удался: %s", message)
             try:
-                sample = offline(message, server["password"])
+                # Обрыв SSH пишем как обычную точку, цикл не останавливаем.
+            sample = offline(message, server["password"])
                 insert_sample(server["id"], sample)
                 evaluate(server, sample)
             except Exception:
